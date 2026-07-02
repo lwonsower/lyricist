@@ -1,26 +1,384 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ==========================================================================
+   CYBERPUNK / GLITCH DESIGN SYSTEM — DESIGN TOKENS (THE DNA)
+   Tailwind v4: values declared in @theme become both CSS variables AND
+   generate utilities (bg-*, text-*, border-*, font-*, shadow-*).
+   ========================================================================== */
+@theme {
+  /* --- Colors (dark mode is mandatory) --- */
+  --color-background: #0a0a0f; /* deep void black w/ blue undertone */
+  --color-foreground: #e0e0e0; /* primary text — softer than pure white */
+  --color-card: #12121a; /* deep purple-black card */
+  --color-muted: #1c1c2e; /* elevated UI chrome */
+  --color-muted-foreground: #6b7280; /* secondary text */
+  --color-accent: #00ff88; /* PRIMARY NEON — electric green */
+  --color-accent-secondary: #ff00ff; /* SECONDARY NEON — hot magenta */
+  --color-accent-tertiary: #00d4ff; /* TERTIARY NEON — electric cyan */
+  --color-border: #2a2a3a; /* subtle borders */
+  --color-input: #12121a; /* deep input background */
+  --color-ring: #00ff88; /* focus ring == accent */
+  --color-destructive: #ff3366; /* error / danger */
+
+  /* --- Typography --- */
+  --font-heading: var(--font-orbitron), "Share Tech Mono", monospace;
+  --font-mono: var(--font-jetbrains-mono), "Fira Code", "Consolas", monospace;
+  --font-label: var(--font-share-tech-mono), monospace;
+
+  /* --- Radii (sharp cuts are the default; chamfer via clip-path) --- */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-base: 4px;
+
+  /* --- Neon glow shadow tokens (generate shadow-neon, shadow-neon-lg, ...) --- */
+  --shadow-neon-sm: 0 0 3px #00ff88, 0 0 6px #00ff8830;
+  --shadow-neon: 0 0 5px #00ff88, 0 0 10px #00ff8840;
+  --shadow-neon-lg: 0 0 10px #00ff88, 0 0 20px #00ff8860, 0 0 40px #00ff8830;
+  --shadow-neon-secondary: 0 0 5px #ff00ff, 0 0 20px #ff00ff60;
+  --shadow-neon-tertiary: 0 0 5px #00d4ff, 0 0 20px #00d4ff60;
+
+  /* --- Named keyframe animations (generate animate-* utilities) --- */
+  --animate-blink: blink 1s step-end infinite;
+  --animate-glitch: glitch 2.5s infinite;
+  --animate-flicker: flicker 4s infinite;
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-rgb-shift: rgbShift 3s ease-in-out infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-mono);
+  letter-spacing: 0.015em;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+::selection {
+  background: var(--color-accent);
+  color: var(--color-background);
+}
+
+/* Neon-styled scrollbar to keep the terminal illusion intact */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border: 2px solid var(--color-background);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
+}
+
+/* ==========================================================================
+   SIGNATURE UTILITIES
+   ========================================================================== */
+
+/* --- Chamfered corners (militaristic tech-panel cut) --- */
+.cyber-chamfer {
+  clip-path: polygon(
+    0 14px,
+    14px 0,
+    calc(100% - 14px) 0,
+    100% 14px,
+    100% calc(100% - 14px),
+    calc(100% - 14px) 100%,
+    14px 100%,
+    0 calc(100% - 14px)
+  );
+}
+.cyber-chamfer-sm {
+  clip-path: polygon(
+    0 8px,
+    8px 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0 calc(100% - 8px)
+  );
+}
+/* Asymmetric single-corner cut for accents / badges */
+.cyber-notch {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+/* --- Full-page scanline overlay (CRT refresh) --- */
+.cyber-scanlines::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.3) 2px,
+    rgba(0, 0, 0, 0.3) 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* A single scanline beam that travels down the viewport */
+.cyber-scanbeam::before {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 120px;
+  z-index: 99;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 255, 136, 0.04),
+    transparent
+  );
+  animation: var(--animate-scanline);
+}
+
+/* --- Grid / circuit background (PCB traces) --- */
+.cyber-grid {
+  background-image: linear-gradient(
+      rgba(0, 255, 136, 0.04) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.04) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Radial neon mesh — drop into a corner at low opacity for depth */
+.cyber-mesh {
+  background:
+    radial-gradient(
+      ellipse 60% 50% at 15% 0%,
+      rgba(0, 255, 136, 0.12),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 50% at 85% 20%,
+      rgba(255, 0, 255, 0.1),
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 50% 100%,
+      rgba(0, 212, 255, 0.08),
+      transparent 60%
+    );
+}
+
+/* --- Blinking terminal cursor --- */
+.cyber-cursor::after {
+  content: "_";
+  color: var(--color-accent);
+  animation: var(--animate-blink);
+  margin-left: 0.1em;
+}
+
+/* --- Chromatic aberration / glitch text --- */
+.cyber-glitch {
+  position: relative;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+.cyber-glitch::before,
+.cyber-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.cyber-glitch::before {
+  color: var(--color-accent-secondary);
+  transform: translate(-2px, 0);
+  clip-path: inset(0 0 55% 0);
+  animation: glitchTop 3s infinite steps(2, jump-none);
+  mix-blend-mode: screen;
+}
+.cyber-glitch::after {
+  color: var(--color-accent-tertiary);
+  transform: translate(2px, 0);
+  clip-path: inset(55% 0 0 0);
+  animation: glitchBottom 2.7s infinite steps(2, jump-none);
+  mix-blend-mode: screen;
+}
+
+/* Static RGB split (used when motion is reduced, and as a base) */
+.cyber-rgb {
+  text-shadow: -1.5px 0 var(--color-accent-secondary),
+    1.5px 0 var(--color-accent-tertiary);
+}
+
+/* --- Holographic corner accents (drop 4 of these inside a relative parent) --- */
+.cyber-corners::before,
+.cyber-corners::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--color-accent);
+  pointer-events: none;
+}
+.cyber-corners::before {
+  top: 6px;
+  left: 6px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+.cyber-corners::after {
+  bottom: 6px;
+  right: 6px;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
+
+/* Animated hue-rotating gradient border wrapper */
+.cyber-animated-border {
+  position: relative;
+  background:
+    linear-gradient(var(--color-card), var(--color-card)) padding-box,
+    linear-gradient(
+        120deg,
+        var(--color-accent),
+        var(--color-accent-tertiary),
+        var(--color-accent-secondary)
+      )
+      border-box;
+  border: 1px solid transparent;
+  animation: hueRotate 8s linear infinite;
+}
+
+/* ==========================================================================
+   KEYFRAMES — sharp, digital, mechanical
+   ========================================================================== */
+@keyframes blink {
+  50% {
+    opacity: 0;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes glitch {
+  0%,
+  100% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(2px, -2px);
+  }
+  60% {
+    transform: translate(-1px, -1px);
+  }
+  80% {
+    transform: translate(1px, 1px);
+  }
+}
+
+/* Top/bottom split glitch for chromatic-aberration text */
+@keyframes glitchTop {
+  0%,
+  92%,
+  100% {
+    transform: translate(-2px, 0);
+    clip-path: inset(0 0 55% 0);
+  }
+  94% {
+    transform: translate(-4px, -1px);
+    clip-path: inset(0 0 40% 0);
+  }
+  96% {
+    transform: translate(3px, 1px);
+    clip-path: inset(0 0 60% 0);
+  }
+}
+@keyframes glitchBottom {
+  0%,
+  90%,
+  100% {
+    transform: translate(2px, 0);
+    clip-path: inset(55% 0 0 0);
+  }
+  93% {
+    transform: translate(4px, 1px);
+    clip-path: inset(45% 0 0 0);
+  }
+  97% {
+    transform: translate(-3px, -1px);
+    clip-path: inset(65% 0 0 0);
+  }
+}
+
+@keyframes flicker {
+  0%,
+  100%,
+  92%,
+  96% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.4;
+  }
+  94% {
+    opacity: 0.9;
+  }
+  95% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    transform: translateY(-120px);
+  }
+  100% {
+    transform: translateY(100vh);
+  }
+}
+
+@keyframes rgbShift {
+  0%,
+  100% {
+    text-shadow: -2px 0 #ff00ff, 2px 0 #00d4ff;
+  }
+  50% {
+    text-shadow: 2px 0 #ff00ff, -2px 0 #00d4ff;
+  }
+}
+
+@keyframes hueRotate {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY — respect reduced motion.
+   Keep the static chromatic-aberration look, kill the movement.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+  .cyber-glitch::before {
+    transform: translate(-1.5px, 0);
+  }
+  .cyber-glitch::after {
+    transform: translate(1.5px, 0);
+  }
 }
